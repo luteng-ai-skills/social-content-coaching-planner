@@ -1,0 +1,5 @@
+interface:
+  display_name: "社群內容陪跑規劃師"
+  short_description: "引導內容新手完成受眾、內容柱、逐篇寫作與月曆工作台"
+  brand_color: "#315E50"
+  default_prompt: "使用 $social-content-coaching-planner 帶我從本人思維開始，一次只問一題，規劃兩週或四週內容。"
