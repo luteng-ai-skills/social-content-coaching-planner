@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>一個月內容工作台</title>
+  <style>
+    :root {
+      --ink: #20211f;
+      --muted: #686a64;
+      --paper: #f6f3ea;
+      --panel: #fffdf8;
+      --line: #ded8c9;
+      --brand: #315e50;
+      --brand-soft: #dfece6;
+      --accent: #d98247;
+      --danger: #a33b32;
+      --shadow: 0 16px 40px rgba(48, 47, 41, .1);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      line-height: 1.55;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(49, 94, 80, .28);
+      outline-offset: 2px;
+    }
+    .shell { max-width: 1500px; margin: 0 auto; padding: 24px; }
+    .topbar {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+      margin-bottom: 20px;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 6px; font-size: clamp(1.7rem, 3vw, 2.6rem); letter-spacing: -.04em; }
+    .eyebrow { color: var(--brand); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .subtle { color: var(--muted); }
+    .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .btn {
+      border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+      border-radius: 999px; padding: 9px 14px; min-height: 42px;
+    }
+    .btn:hover { border-color: var(--brand); }
+    .btn.primary { background: var(--brand); color: white; border-color: var(--brand); }
+    .btn.danger { color: var(--danger); }
+    .btn.small { min-height: 34px; padding: 6px 10px; font-size: .88rem; }
+    .tabs {
+      display: grid; gap: 7px;
+    }
+    .tab {
+      width: 100%; text-align: left; border: 0; border-radius: 10px; padding: 10px 12px;
+      background: transparent; color: var(--muted); font-weight: 700;
+    }
+    .tab.active { background: var(--ink); color: white; }
+    .workspace-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 20px; align-items: start; }
+    .workflow-menu { position: sticky; top: 16px; padding: 14px; }
+    .workflow-menu h2 { font-size: .98rem; margin-bottom: 10px; }
+    .workflow-actions { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .save-status { display: block; margin-top: 10px; border-radius: 10px; padding: 9px 10px; background: var(--brand-soft); color: var(--brand); font-size: .78rem; font-weight: 700; }
+    .save-status.pending { background: #fff4d8; color: #76520e; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 18px; box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+    .grid { display: grid; gap: 16px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .stat strong { display: block; font-size: 1.7rem; }
+    .label { display: block; color: var(--muted); font-size: .82rem; font-weight: 700; margin-bottom: 5px; }
+    .value { white-space: pre-wrap; }
+    .list { margin: 0; padding-left: 20px; }
+    .list li + li { margin-top: 6px; }
+    .section-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 22px 0 12px;
+    }
+    .section-head h2 { margin: 0; font-size: 1.25rem; }
+    .filters {
+      display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-bottom: 14px;
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px;
+    }
+    .field { display: grid; gap: 5px; min-width: 150px; flex: 1; }
+    input, select, textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: 10px; background: white;
+      color: var(--ink); padding: 9px 10px;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .calendar {
+      display: grid; grid-template-columns: repeat(7, minmax(120px, 1fr)); gap: 8px;
+      overflow-x: auto; padding-bottom: 8px;
+    }
+    .weekday { color: var(--muted); font-size: .78rem; font-weight: 800; padding: 6px; text-align: center; }
+    .day {
+      min-height: 150px; background: rgba(255,255,255,.72); border: 1px solid var(--line);
+      border-radius: 14px; padding: 8px; position: relative;
+    }
+    .day.empty { background: transparent; border-style: dashed; opacity: .45; }
+    .day.locked { background: repeating-linear-gradient(-45deg, #f1eee5, #f1eee5 8px, #ebe7dc 8px, #ebe7dc 16px); }
+    .day-number { font-size: .78rem; color: var(--muted); font-weight: 800; margin-bottom: 6px; }
+    .locked-note { font-size: .72rem; color: var(--muted); }
+    .article-card {
+      width: 100%; text-align: left; border: 0; border-left: 4px solid var(--brand);
+      border-radius: 9px; background: white; padding: 8px; margin-bottom: 6px; box-shadow: 0 3px 10px rgba(0,0,0,.06);
+    }
+    .article-card:hover { transform: translateY(-1px); }
+    .article-card strong { display: block; font-size: .78rem; line-height: 1.35; margin-bottom: 4px; }
+    .meta { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; font-size: .68rem; color: var(--muted); }
+    .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 7px; background: var(--brand-soft); color: var(--brand); }
+    .badge.orange { background: #fae6d7; color: #8a4b25; }
+    .badge.gray { background: #eceae4; color: #66645f; }
+    .pillar-card { display: grid; gap: 10px; }
+    .pillar-card .row { display: grid; grid-template-columns: 1fr 120px; gap: 10px; }
+    .research-card { border-left: 5px solid var(--accent); }
+    .source-list { display: grid; gap: 6px; margin-top: 10px; }
+    .source-list a { color: var(--brand); overflow-wrap: anywhere; }
+    .empty-state { padding: 34px; text-align: center; color: var(--muted); }
+    .drawer-backdrop {
+      position: fixed; inset: 0; z-index: 20; background: rgba(22,23,20,.4); display: none;
+    }
+    .drawer-backdrop.open { display: block; }
+    .drawer {
+      position: absolute; top: 0; right: 0; width: min(720px, 94vw); height: 100%; overflow-y: auto;
+      background: var(--paper); padding: 24px; box-shadow: -20px 0 60px rgba(0,0,0,.18);
+    }
+    .drawer-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; position: sticky; top: -24px; z-index: 2; background: var(--paper); padding: 24px 0 12px; }
+    .drawer-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .drawer-section { margin-top: 18px; }
+    .drawer-section h3 { font-size: 1rem; margin-bottom: 8px; }
+    .modify-menu { display: flex; flex-wrap: wrap; gap: 7px; }
+    .history { font-size: .86rem; color: var(--muted); }
+    .notice { border-radius: 12px; padding: 12px 14px; background: #fff4d8; border: 1px solid #ead8a7; }
+    .toast {
+      position: fixed; right: 20px; bottom: 20px; z-index: 40; color: white; background: var(--ink);
+      border-radius: 12px; padding: 11px 15px; box-shadow: var(--shadow); opacity: 0; transform: translateY(12px); pointer-events: none;
+      transition: .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .grid.three { grid-template-columns: 1fr 1fr; }
+      .calendar { grid-template-columns: repeat(7, minmax(105px, 1fr)); }
+      .workspace-layout { grid-template-columns: 1fr; }
+      .workflow-menu { position: static; }
+      .tabs { display: flex; overflow-x: auto; scrollbar-width: thin; }
+      .tab { width: auto; white-space: nowrap; }
+      .workflow-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 680px) {
+      .shell { padding: 16px; }
+      .topbar { flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .grid.two, .grid.three, .drawer-grid { grid-template-columns: 1fr; }
+      .calendar { display: block; }
+      .weekday, .day.empty { display: none; }
+      .day { min-height: auto; margin-bottom: 8px; }
+      .day.locked { display: none; }
+      .drawer { width: 100%; padding: 18px; }
+      .drawer-head { top: -18px; padding-top: 18px; }
+      .workflow-actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Social Content Coaching</div>
+        <h1 id="workspace-title">一個月內容工作台</h1>
+        <p class="subtle" id="workspace-summary"></p>
+      </div>
+      <div class="actions" aria-label="資料操作">
+        <label class="btn" for="import-file">匯入 JSON</label>
+        <input class="hidden" id="import-file" type="file" accept="application/json,.json">
+        <button class="btn" id="export-json" type="button">匯出 JSON</button>
+        <button class="btn" id="export-markdown" type="button">匯出 Markdown</button>
+        <button class="btn danger" id="reset-local" type="button">清除暫存</button>
+      </div>
+    </header>
+
+    <div class="workspace-layout">
+      <aside class="card workflow-menu" aria-label="陪跑選單">
+        <h2>陪跑選單</h2>
+        <nav class="tabs" aria-label="工作台分頁">
+          <button class="tab active" data-tab="overview" type="button">1. 本月設定</button>
+          <button class="tab" data-tab="pillars" type="button">2. 內容柱</button>
+          <button class="tab" data-tab="calendar" type="button">3. 月行事曆</button>
+          <button class="tab" data-tab="sources" type="button">4. 案例與來源</button>
+          <button class="tab" data-tab="research" type="button">5. 議題研究庫</button>
+          <button class="tab" data-tab="publishing" type="button">6. 發布與歸檔</button>
+        </nav>
+        <div class="workflow-actions">
+          <button class="btn primary" id="open-next-article" type="button">開啟下一篇</button>
+          <button class="btn" id="menu-export-json" type="button">備份正式 JSON</button>
+        </div>
+        <span class="save-status" id="save-status" role="status" aria-live="polite">已載入工作台</span>
+      </aside>
+
+      <main>
+      <section class="panel active" id="panel-overview" aria-labelledby="overview-heading">
+        <div class="grid three" id="overview-stats"></div>
+        <div class="section-head"><h2 id="overview-heading">本人思維摘要</h2></div>
+        <div class="grid two" id="mindset-summary"></div>
+        <div class="section-head"><h2>受眾建議</h2></div>
+        <div class="grid three" id="audience-grid"></div>
+      </section>
+
+      <section class="panel" id="panel-pillars" aria-labelledby="pillars-heading">
+        <div class="section-head">
+          <div><h2 id="pillars-heading">內容柱</h2><div class="subtle" id="pillar-ratio"></div></div>
+          <button class="btn primary" id="add-pillar" type="button">新增內容柱</button>
+        </div>
+        <div class="grid two" id="pillar-grid"></div>
+      </section>
+
+      <section class="panel" id="panel-calendar" aria-labelledby="calendar-heading">
+        <div class="section-head">
+          <div><h2 id="calendar-heading">月行事曆</h2><div class="subtle" id="calendar-note"></div></div>
+          <button class="btn primary" id="add-article" type="button">新增文章</button>
+        </div>
+        <div class="filters">
+          <label class="field"><span class="label">內容柱</span><select id="filter-pillar"></select></label>
+          <label class="field"><span class="label">平台</span><select id="filter-platform"></select></label>
+          <label class="field"><span class="label">狀態</span><select id="filter-status"></select></label>
+          <button class="btn" id="clear-filters" type="button">清除篩選</button>
+        </div>
+        <div class="calendar" id="calendar-grid"></div>
+      </section>
+
+      <section class="panel" id="panel-research" aria-labelledby="research-heading">
+        <div class="section-head"><h2 id="research-heading">議題研究資料庫</h2></div>
+        <div class="grid two" id="research-grid"></div>
+      </section>
+
+      <section class="panel" id="panel-sources" aria-labelledby="sources-heading">
+        <div class="section-head">
+          <div><h2 id="sources-heading">案例與來源索引</h2><div class="subtle">人物思維只負責判斷與表達；真實情節必須回到可追溯來源與案例卡。</div></div>
+        </div>
+        <div class="grid two" id="source-library-grid"></div>
+      </section>
+
+      <section class="panel" id="panel-publishing" aria-labelledby="publishing-heading">
+        <div class="section-head"><h2 id="publishing-heading">發布與歸檔</h2></div>
+        <div class="grid two" id="publishing-grid"></div>
+      </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop" id="article-drawer" aria-hidden="true">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+      <div class="drawer-head">
+        <div><div class="eyebrow">單篇內容底稿</div><h2 id="drawer-title">文章</h2></div>
+        <button class="btn" id="close-drawer" type="button">關閉</button>
+      </div>
+      <div id="drawer-content"></div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script id="initial-data" type="application/json">{"schemaVersion":1,"workspace":{"id":"demo-2026-08","learnerName":"陪跑學員","month":"2026-08","periodWeeks":2,"goal":"建立專業信任，讓適合的讀者理解我能提供的幫助","platforms":["Facebook","Instagram"],"postsPerWeek":2,"timezone":"Asia/Taipei","updatedAt":"2026-08-20T10:00:00+08:00"},"mindset":{"status":"active","skillName":"示範學員思維","source":"skill","confirmedSummary":["重視可以真正執行的方法","希望用生活案例解釋專業"],"inferredSummary":["可多寫從混亂整理成步驟的內容"],"avoid":["不使用沒有來源的誇張數字","不捏造個人經驗"],"writingPreferences":{"tone":["清楚","務實","像陪讀者一起拆解"],"sentenceRhythm":"短句與中句交錯","paragraphStyle":"每段一個重點，避免大段文字","lineBreakStyle":"轉折與重點前後留白","punctuation":"少用驚嘆號","openingStyle":"從具體情境切入","closingStyle":"收回可執行的一步","ctaStyle":"自然邀請讀者回想自身經驗","forbiddenPatterns":["保證成效","未經證實的成功案例"],"status":"已確認"}},"audiences":[{"id":"aud-primary","role":"primary","name":"想開始經營內容但沒有方向的自由工作者","currentState":"知道要被看見，但每次打開社群都不知道寫什麼","pain":"缺少可持續的內容分類與寫作順序","desiredOutcome":"能固定產出並讓讀者理解自己的價值","followReason":"可以取得簡單、可執行的內容方法","suitableContent":"流程拆解、實作案例、常見錯誤","avoidLanguage":"不要用行銷黑話或保證流量","status":"confirmed"},{"id":"aud-secondary","role":"secondary","name":"已經發文但內容散亂的個人品牌經營者","currentState":"有素材但缺少一致主軸","pain":"讀者看不懂帳號長期在談什麼","desiredOutcome":"建立清楚內容柱與系列","followReason":"看見可直接套用的整理示範","suitableContent":"內容健檢、前後對照、系列規劃","avoidLanguage":"不要只談抽象定位","status":"confirmed"},{"id":"aud-not-priority","role":"notPriority","name":"已有完整行銷團隊的大型品牌","currentState":"已有專人與成熟流程","pain":"需要的是跨部門治理而非新手方法","desiredOutcome":"大規模內容營運","followReason":"本月內容不以此族群為主","suitableContent":"不優先","avoidLanguage":"不宣稱新手方法可直接解決企業流程","status":"confirmed"}],"pillars":[{"id":"pillar-process","name":"內容流程整理","sourceType":"confirmed","sourceNote":"本人思維反覆提到可執行步驟","audienceIds":["aud-primary","aud-secondary"],"readerProblem":"有素材但不知道怎麼排成可持續流程","purpose":"建立方法與專業信任","formats":["步驟教學","清單","流程示範"],"ratio":60,"avoid":"避免把流程說成唯一標準","status":"confirmed"},{"id":"pillar-practice","name":"真實實作觀察","sourceType":"inferred","sourceNote":"從生活案例表達習慣歸納","audienceIds":["aud-primary"],"readerProblem":"看過方法但不知道實際怎麼使用","purpose":"用真實情境降低理解門檻","formats":["案例","復盤","生活觀察"],"ratio":40,"avoid":"未確認的個人故事不得寫成事實","status":"confirmed"}],"sourceLibrary":{"sources":[{"id":"source-demo-interview","title":"示範學員訪談摘要","sourceType":"訪談","pathOrUrl":"示範資料／訪談摘要.md","recordedAt":"2026-08-01","owner":"陪跑學員","usageBoundary":"僅示範欄位，不得當成真實學員案例","status":"需確認"}],"caseCards":[{"id":"case-demo-blank-page","title":"面對空白貼文時重新整理內容入口","summary":"示範如何把一段訪談拆成可追溯案例卡。","sourceId":"source-demo-interview","locator":"第 3 段","peopleOrOrganizations":[],"situation":"準備發文時不知道從何開始","action":"先分類受眾、題目與平台","result":"示範資料，尚未由本人確認","reflection":"可執行的入口比一次想出完整文章重要","confirmedQuotes":[],"usableFor":["內容流程整理","新手寫作卡點"],"missingDetails":["本人真實情境與結果"],"sensitivity":"需本人確認","status":"草稿"}]},"articles":[{"id":"article-001","order":1,"date":"2026-08-03","time":"20:00","platform":"Facebook","pillarId":"pillar-process","title":"為什麼你不是沒素材，只是沒有內容入口","purpose":"讓讀者辨識自己卡住的位置","audienceId":"aud-primary","angle":"從打開空白貼文的情境，拆解素材與題目的差別","personalPrompt":"補一個自己曾經卡在空白頁的真實情境","status":"草稿待確認","lengthPlan":{"mode":"中篇","recommendedRange":"800～1,200 字","targetChars":"1,000 字","reason":"需要交代空白頁情境、原因與一個可執行方法","status":"已確認"},"evidenceGate":{"status":"已確認可寫","sourceRefs":["本人訪談摘要｜內容卡住的經驗｜第 3 段"],"confirmedFacts":["本人重視可執行的方法"],"missingInfo":["仍可補一個本人卡在空白頁的具體情境"],"inferenceBoundaries":["不能把示範情境寫成本人真實經歷"],"checkedAt":"2026-08-02T18:00:00+08:00"},"appliedStyle":{"tone":["清楚","務實"],"formatting":["每段一個重點","轉折前後留白"],"source":"示範學員思維"},"research":[{"title":"創作者規劃內容時常見的認知負荷","eventDate":"2026-07-15","checkedAt":"2026-08-01","summary":"示範研究資料，正式使用時需由 AI 搜尋並換成真實來源。","whyUseful":"可支持先建立分類入口再開始寫作的切角。","audienceBenefit":"讓讀者知道卡住不一定是沒有能力。","freshUntil":"2026-09-01","risk":"目前僅為範例，不得當成正式引用。","recommendedAngle":"先降低開始成本，再談寫作技巧。","decision":"採用","sources":[]}],"draft":{"version":1,"body":"你可能不是沒有內容。\n\n只是每次準備發文時，都要重新決定要寫給誰、要談什麼、要放在哪裡。\n\n這篇是工作台示範底稿，請在正式使用時換成學員本人確認過的內容。","updatedAt":"2026-08-02T18:30:00+08:00"},"revisionHistory":[{"version":1,"date":"2026-08-02T18:30:00+08:00","summary":"建立第一版示範底稿"}],"changeRequest":{"type":"","note":""},"publishing":{"account":"","audience":"平台預設受眾","media":"無","action":"排程","capability":"需要先檢查","readbackUrl":""},"archive":{"provider":"Notion","destination":"寫作草稿","reason":"正文仍需補本人案例","status":"待確認","url":""}},{"id":"article-002","order":2,"date":"2026-08-07","time":"12:30","platform":"Instagram","pillarId":"pillar-practice","title":"我怎麼把一則工作紀錄變成三個內容題目","purpose":"示範素材轉題目的過程","audienceId":"aud-primary","angle":"以前後對照呈現拆解過程","personalPrompt":"提供一則可以公開的真實工作紀錄","status":"待補本人觀點","lengthPlan":{"mode":"","recommendedRange":"","targetChars":"","reason":"","status":"建議中"},"evidenceGate":{"status":"待補資料","sourceRefs":[],"confirmedFacts":[],"missingInfo":["一則可以公開的真實工作紀錄"],"inferenceBoundaries":["不得自行虛構素材轉換案例"],"checkedAt":""},"appliedStyle":{"tone":[],"formatting":[],"source":"示範學員思維"},"research":[],"draft":{"version":0,"body":"","updatedAt":""},"revisionHistory":[],"changeRequest":{"type":"","note":""},"publishing":{"account":"","audience":"平台預設受眾","media":"待確認","action":"排程","capability":"只能輸出可貼文案","readbackUrl":""},"archive":{"provider":"未設定","destination":"資料蒐集庫","reason":"尚未完成研究","status":"待確認","url":""}}],"archive":{"provider":"Notion","defaultDestinationUrl":"","destinationType":"unknown","schemaMap":{},"checkedAt":""},"publishingBatch":{"scope":"兩週","status":"未準備","confirmationPhrase":"確認兩週排程","authorizedAt":"","articles":[]}}</script>
+  <script>
+    (() => {
+      "use strict";
+
+      const STATUSES = ["待研究", "研究完成", "待補本人觀點", "寫作中", "草稿待確認", "已確認", "待排程", "已排程", "已發布", "封存"];
+      const CHANGE_TYPES = ["換切角", "換平台", "調篇幅", "調語氣", "調專業程度", "降低銷售感", "提高銷售感", "改開頭", "改收尾", "改 CTA"];
+      const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
+
+      const deepClone = value => JSON.parse(JSON.stringify(value));
+      const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+      const byId = id => document.getElementById(id);
+      const nowIso = () => new Date().toISOString();
+      const defaultLengthPlan = () => ({mode:"", recommendedRange:"", targetChars:"", reason:"", status:"建議中"});
+      const defaultEvidenceGate = () => ({status:"未檢查", sourceRefs:[], confirmedFacts:[], missingInfo:[], inferenceBoundaries:[], checkedAt:""});
+      const defaultAppliedStyle = () => ({tone:[], formatting:[], source:""});
+
+      function normalizeData(data) {
+        data.mindset = data.mindset || {};
+        data.sourceLibrary = data.sourceLibrary || {sources:[], caseCards:[]};
+        data.sourceLibrary.sources = data.sourceLibrary.sources || [];
+        data.sourceLibrary.caseCards = data.sourceLibrary.caseCards || [];
+        data.mindset.writingPreferences = data.mindset.writingPreferences || {
+          tone:[], sentenceRhythm:"", paragraphStyle:"", lineBreakStyle:"", punctuation:"",
+          openingStyle:"", closingStyle:"", ctaStyle:"", forbiddenPatterns:[], status:"尚未確認"
+        };
+        (data.articles || []).forEach(article => {
+          article.lengthPlan = {...defaultLengthPlan(), ...(article.lengthPlan || {})};
+          article.evidenceGate = {...defaultEvidenceGate(), ...(article.evidenceGate || {})};
+          article.appliedStyle = {...defaultAppliedStyle(), ...(article.appliedStyle || {})};
+        });
+        return data;
+      }
+
+      let initialData;
+      try {
+        initialData = JSON.parse(byId("initial-data").textContent);
+      } catch (error) {
+        document.body.innerHTML = '<div class="shell"><div class="notice"><strong>工作台資料無法讀取</strong><br>請使用「建立內容工作台.py」由有效 JSON 重新產生。</div></div>';
+        return;
+      }
+
+      const storageKeyFor = data => `社群內容工作台:${data.workspace.id}`;
+      initialData = normalizeData(initialData);
+      let storageKey = storageKeyFor(initialData);
+      let state = deepClone(initialData);
+      let hasUnexportedChanges = false;
+      try {
+        const cached = localStorage.getItem(storageKey);
+        if (cached) {
+          state = normalizeData(JSON.parse(cached));
+          hasUnexportedChanges = JSON.stringify(state) !== JSON.stringify(initialData);
+        }
+      } catch (error) {
+        console.warn("無法讀取瀏覽器暫存", error);
+      }
+      let selectedArticleId = null;
+      let toastTimer;
+      let autosaveTimer;
+      let drawerDirty = false;
+
+      function showToast(message) {
+        const toast = byId("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+      }
+
+      function renderSaveStatus(message) {
+        const status = byId("save-status");
+        if (!status) return;
+        const defaultMessage = hasUnexportedChanges
+          ? "已自動暫存 · 尚未備份 JSON"
+          : state.workspace.lastExportedAt
+            ? "正式 JSON 已備份"
+            : "目前內容已載入 · 修改後請備份 JSON";
+        status.textContent = message || defaultMessage;
+        status.classList.toggle("pending", hasUnexportedChanges);
+      }
+
+      function saveState(message = "已暫存", markUnexported = true) {
+        state.workspace.updatedAt = nowIso();
+        if (markUnexported) hasUnexportedChanges = true;
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(state));
+          renderSaveStatus(hasUnexportedChanges ? `已自動暫存 ${new Date().toLocaleTimeString("zh-TW", {hour:"2-digit", minute:"2-digit"})} · 尚未備份 JSON` : "已備份正式 JSON");
+        } catch (error) {
+          renderSaveStatus("暫存失敗，請立刻匯出 JSON");
+          console.warn(error);
+        }
+        if (message) showToast(message);
+      }
+
+      function pillarName(id) {
+        return state.pillars.find(item => item.id === id)?.name || "未分類";
+      }
+
+      function audienceName(id) {
+        return state.audiences.find(item => item.id === id)?.name || "未設定";
+      }
+
+      function sortedArticles() {
+        return [...state.articles].sort((a, b) => `${a.date} ${a.time || ""} ${a.order || 0}`.localeCompare(`${b.date} ${b.time || ""} ${b.order || 0}`));
+      }
+
+      function renderOverview() {
+        const confirmed = state.articles.filter(article => ["已確認", "待排程", "已排程", "已發布"].includes(article.status)).length;
+        byId("workspace-title").textContent = `${state.workspace.learnerName}｜${state.workspace.month} 內容工作台`;
+        byId("workspace-summary").textContent = `${state.workspace.periodWeeks} 週模式 · 每週 ${state.workspace.postsPerWeek} 篇 · ${state.workspace.timezone}`;
+        byId("overview-stats").innerHTML = [
+          ["本月目標", state.workspace.goal || "尚未確認"],
+          ["規劃文章", `${state.articles.length} 篇`],
+          ["已確認文章", `${confirmed} 篇`]
+        ].map(([label, value]) => `<article class="card stat"><span class="label">${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`).join("");
+
+        const mindset = state.mindset || {};
+        byId("mindset-summary").innerHTML = `
+          <article class="card">
+            <span class="label">目前使用</span>
+            <h3>${escapeHtml(mindset.skillName || "本月暫用訪談設定")}</h3>
+            <p class="subtle">狀態：${escapeHtml(mindset.status || "未設定")} · 來源：${escapeHtml(mindset.source || "未設定")}</p>
+            <ul class="list">${(mindset.confirmedSummary || []).map(item => `<li>${escapeHtml(item)}</li>`).join("") || "<li>尚無本人確認摘要</li>"}</ul>
+          </article>
+          <article class="card">
+            <span class="label">推論與界線</span>
+            <h3>仍要逐項確認</h3>
+            <ul class="list">${(mindset.inferredSummary || []).map(item => `<li>${escapeHtml(item)}</li>`).join("") || "<li>尚無推論</li>"}</ul>
+            <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+            <ul class="list">${(mindset.avoid || []).map(item => `<li>${escapeHtml(item)}</li>`).join("") || "<li>尚無避免事項</li>"}</ul>
+          </article>
+          <article class="card">
+            <span class="label">語氣與排版偏好</span>
+            <h3>${escapeHtml(mindset.writingPreferences?.status || "尚未確認")}</h3>
+            <p><span class="label">語氣</span>${escapeHtml((mindset.writingPreferences?.tone || []).join("、") || "尚未確認")}</p>
+            <p><span class="label">句子與段落</span>${escapeHtml([mindset.writingPreferences?.sentenceRhythm, mindset.writingPreferences?.paragraphStyle, mindset.writingPreferences?.lineBreakStyle].filter(Boolean).join("；") || "尚未確認")}</p>
+            <p><span class="label">開頭／收尾／CTA</span>${escapeHtml([mindset.writingPreferences?.openingStyle, mindset.writingPreferences?.closingStyle, mindset.writingPreferences?.ctaStyle].filter(Boolean).join("；") || "尚未確認")}</p>
+          </article>`;
+
+        const roleLabels = {primary: "主要受眾", secondary: "次要受眾", notPriority: "本月不優先"};
+        byId("audience-grid").innerHTML = state.audiences.map(audience => `
+          <article class="card">
+            <span class="badge ${audience.role === "notPriority" ? "gray" : ""}">${escapeHtml(roleLabels[audience.role] || audience.role)}</span>
+            <h3 style="margin-top:10px">${escapeHtml(audience.name)}</h3>
+            <p><span class="label">目前狀態</span>${escapeHtml(audience.currentState)}</p>
+            <p><span class="label">最想解決</span>${escapeHtml(audience.pain)}</p>
+            <p><span class="label">適合內容</span>${escapeHtml(audience.suitableContent)}</p>
+          </article>`).join("") || '<div class="empty-state card">尚未建立受眾建議</div>';
+      }
+
+      function renderPillars() {
+        const confirmed = state.pillars.filter(pillar => pillar.status === "confirmed");
+        const ratio = confirmed.reduce((sum, pillar) => sum + Number(pillar.ratio || 0), 0);
+        byId("pillar-ratio").textContent = `已確認內容柱比例：${ratio}%${confirmed.length && ratio !== 100 ? "（需調整為 100%）" : ""}`;
+        byId("pillar-grid").innerHTML = state.pillars.map(pillar => `
+          <article class="card pillar-card" data-pillar-id="${escapeHtml(pillar.id)}">
+            <div class="row">
+              <label class="field"><span class="label">名稱</span><input data-field="name" value="${escapeHtml(pillar.name)}"></label>
+              <label class="field"><span class="label">比例 %</span><input data-field="ratio" type="number" min="0" max="100" value="${escapeHtml(pillar.ratio)}"></label>
+            </div>
+            <label class="field"><span class="label">來源與依據</span><input data-field="sourceNote" value="${escapeHtml(pillar.sourceNote)}"></label>
+            <label class="field"><span class="label">讀者問題</span><textarea data-field="readerProblem">${escapeHtml(pillar.readerProblem)}</textarea></label>
+            <label class="field"><span class="label">內容目的</span><input data-field="purpose" value="${escapeHtml(pillar.purpose)}"></label>
+            <label class="field"><span class="label">適合題型，以逗號分隔</span><input data-field="formats" value="${escapeHtml((pillar.formats || []).join("、"))}"></label>
+            <label class="field"><span class="label">避免事項</span><input data-field="avoid" value="${escapeHtml(pillar.avoid)}"></label>
+            <div class="actions" style="justify-content:flex-start">
+              <select data-field="status" aria-label="內容柱狀態">
+                ${["suggested", "confirmed", "rejected"].map(status => `<option value="${status}" ${pillar.status === status ? "selected" : ""}>${{suggested:"建議中",confirmed:"已確認",rejected:"不採用"}[status]}</option>`).join("")}
+              </select>
+              <button class="btn small danger" data-action="delete-pillar" type="button">刪除</button>
+            </div>
+          </article>`).join("") || '<div class="empty-state card">尚未建立內容柱</div>';
+      }
+
+      function updateFilterOptions() {
+        const current = {
+          pillar: byId("filter-pillar").value,
+          platform: byId("filter-platform").value,
+          status: byId("filter-status").value
+        };
+        byId("filter-pillar").innerHTML = '<option value="">全部內容柱</option>' + state.pillars.map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("");
+        const platforms = [...new Set([...state.workspace.platforms, ...state.articles.map(article => article.platform)].filter(Boolean))];
+        byId("filter-platform").innerHTML = '<option value="">全部平台</option>' + platforms.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
+        byId("filter-status").innerHTML = '<option value="">全部狀態</option>' + STATUSES.map(item => `<option value="${item}">${item}</option>`).join("");
+        byId("filter-pillar").value = state.pillars.some(item => item.id === current.pillar) ? current.pillar : "";
+        byId("filter-platform").value = platforms.includes(current.platform) ? current.platform : "";
+        byId("filter-status").value = STATUSES.includes(current.status) ? current.status : "";
+      }
+
+      function isLockedDate(dateString) {
+        if (state.workspace.periodWeeks === 4) return false;
+        const [year, month] = state.workspace.month.split("-").map(Number);
+        const cutoff = new Date(year, month - 1, 15);
+        return new Date(`${dateString}T00:00:00`) >= cutoff;
+      }
+
+      function renderCalendar() {
+        updateFilterOptions();
+        const pillarFilter = byId("filter-pillar").value;
+        const platformFilter = byId("filter-platform").value;
+        const statusFilter = byId("filter-status").value;
+        const [year, month] = state.workspace.month.split("-").map(Number);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const firstJsDay = new Date(year, month - 1, 1).getDay();
+        const mondayOffset = (firstJsDay + 6) % 7;
+        let html = WEEKDAYS.map(day => `<div class="weekday" aria-hidden="true">週${day}</div>`).join("");
+        html += Array.from({length: mondayOffset}, () => '<div class="day empty"></div>').join("");
+
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const date = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+          const locked = isLockedDate(date);
+          const articles = sortedArticles().filter(article => article.date === date)
+            .filter(article => !pillarFilter || article.pillarId === pillarFilter)
+            .filter(article => !platformFilter || article.platform === platformFilter)
+            .filter(article => !statusFilter || article.status === statusFilter);
+          html += `<div class="day ${locked ? "locked" : ""}" data-date="${date}">
+            <div class="day-number">${day} 日 ${locked ? '<span class="locked-note">· 尚未展開</span>' : ""}</div>
+            ${articles.map(article => `<button class="article-card" data-article-id="${escapeHtml(article.id)}" type="button">
+              <strong>${escapeHtml(article.title || "未命名文章")}</strong>
+              <span class="meta"><span>${escapeHtml(article.time || "")}</span><span>${escapeHtml(article.platform)}</span><span class="badge">${escapeHtml(article.status)}</span></span>
+            </button>`).join("")}
+          </div>`;
+        }
+        byId("calendar-grid").innerHTML = html;
+        byId("calendar-note").textContent = state.workspace.periodWeeks === 2 ? "兩週模式：15 日起顯示為尚未展開" : "四週模式：顯示完整月份";
+      }
+
+      function renderResearch() {
+        const rows = [];
+        sortedArticles().forEach(article => (article.research || []).forEach(item => rows.push({article, item})));
+        byId("research-grid").innerHTML = rows.map(({article, item}) => `
+          <article class="card research-card">
+            <div class="meta"><span class="badge orange">${escapeHtml(item.decision || "待確認")}</span><span>${escapeHtml(article.title)}</span></div>
+            <h3 style="margin-top:10px">${escapeHtml(item.title)}</h3>
+            <p>${escapeHtml(item.summary)}</p>
+            <p><span class="label">為什麼適合</span>${escapeHtml(item.whyUseful)}</p>
+            <p><span class="label">受眾能得到什麼</span>${escapeHtml(item.audienceBenefit)}</p>
+            <p><span class="label">時效與風險</span>${escapeHtml(item.freshUntil || "未設定")} · ${escapeHtml(item.risk || "未設定")}</p>
+            <div class="source-list">${(item.sources || []).map(source => `<a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.publisher || source.title)}｜${escapeHtml(source.title)}</a>`).join("") || '<span class="subtle">尚無正式來源，不能當成已查證素材</span>'}</div>
+          </article>`).join("") || '<div class="empty-state card">尚未建立研究資料。內容柱確認後，再逐篇搜尋。</div>';
+      }
+
+      function renderSources() {
+        const library = state.sourceLibrary || {sources:[], caseCards:[]};
+        const sources = (library.sources || []).map(source => `
+          <article class="card">
+            <span class="badge gray">${escapeHtml(source.sourceType || "來源")}</span>
+            <h3 style="margin-top:10px">${escapeHtml(source.title || source.id || "未命名來源")}</h3>
+            <p><span class="label">來源定位</span>${escapeHtml(source.pathOrUrl || "尚未記錄")}</p>
+            <p><span class="label">日期／擁有者</span>${escapeHtml([source.recordedAt, source.owner].filter(Boolean).join(" · ") || "尚未記錄")}</p>
+            <p><span class="label">使用邊界</span>${escapeHtml(source.usageBoundary || "尚未確認")}</p>
+            <span class="badge ${source.status === "可使用" ? "" : "orange"}">${escapeHtml(source.status || "需確認")}</span>
+          </article>`).join("");
+        const cases = (library.caseCards || []).map(item => `
+          <article class="card">
+            <span class="badge orange">案例卡｜${escapeHtml(item.status || "草稿")}</span>
+            <h3 style="margin-top:10px">${escapeHtml(item.title || item.id || "未命名案例")}</h3>
+            <p>${escapeHtml(item.summary || "尚未整理摘要")}</p>
+            <p><span class="label">來源定位</span>${escapeHtml([item.sourceId, item.locator].filter(Boolean).join("｜") || "尚未連結來源")}</p>
+            <p><span class="label">情境／行動／結果</span>${escapeHtml([item.situation, item.action, item.result].filter(Boolean).join("；") || "尚未整理")}</p>
+            <p><span class="label">適用題目</span>${escapeHtml((item.usableFor || []).join("、") || "尚未設定")}</p>
+            <p><span class="label">仍缺細節</span>${escapeHtml((item.missingDetails || []).join("、") || "無")}</p>
+            <span class="badge ${item.sensitivity === "可公開" ? "" : "gray"}">${escapeHtml(item.sensitivity || "需本人確認")}</span>
+          </article>`).join("");
+        byId("source-library-grid").innerHTML = sources + cases || '<div class="empty-state card">尚未建立來源索引或案例卡。需要真實故事時，請先回讀原始素材並建立可追溯資料。</div>';
+      }
+
+      function renderPublishing() {
+        const batch = state.publishingBatch || {};
+        const archive = state.archive || {};
+        const confirmed = state.articles.filter(article => article.status === "已確認").length;
+        byId("publishing-grid").innerHTML = `
+          <article class="card">
+            <span class="label">批次排程</span>
+            <h3>${escapeHtml(batch.scope || (state.workspace.periodWeeks === 2 ? "兩週" : "四週"))}｜${escapeHtml(batch.status || "未準備")}</h3>
+            <p>已確認文章 ${confirmed}／${state.articles.length} 篇</p>
+            <p class="subtle">只有所有文章完成、平台能力已驗證，並顯示完整批次確認卡後，精確回覆「${escapeHtml(batch.confirmationPhrase || "確認排程") }」才算授權。</p>
+            <ul class="list">${state.articles.map(article => `<li>${escapeHtml(article.date)}｜${escapeHtml(article.platform)}｜${escapeHtml(article.title)}｜${escapeHtml(article.publishing?.capability || "未檢查")}</li>`).join("") || "<li>尚無文章</li>"}</ul>
+          </article>
+          <article class="card">
+            <span class="label">預設歸檔</span>
+            <h3>${escapeHtml(archive.provider || "未設定")}</h3>
+            <p>類型：${escapeHtml(archive.destinationType || "unknown")}</p>
+            <p class="subtle">${archive.defaultDestinationUrl ? "已保存目的地連結，不包含登入憑證。" : "尚未提供目的地連結。選擇 Notion 時，AI 應先解釋用途再單獨詢問連結。"}</p>
+            ${archive.defaultDestinationUrl ? `<a href="${escapeHtml(archive.defaultDestinationUrl)}" target="_blank" rel="noreferrer">開啟預設位置</a>` : ""}
+          </article>`;
+      }
+
+      function renderAll() {
+        renderOverview();
+        renderPillars();
+        renderCalendar();
+        renderSources();
+        renderResearch();
+        renderPublishing();
+        renderSaveStatus();
+      }
+
+      function switchTab(name) {
+        document.querySelectorAll(".tab").forEach(tab => tab.classList.toggle("active", tab.dataset.tab === name));
+        document.querySelectorAll(".panel").forEach(panel => panel.classList.toggle("active", panel.id === `panel-${name}`));
+      }
+
+      function articleOptions(items, selected, getter = item => item.id, label = item => item.name) {
+        return items.map(item => `<option value="${escapeHtml(getter(item))}" ${getter(item) === selected ? "selected" : ""}>${escapeHtml(label(item))}</option>`).join("");
+      }
+
+      function linesFrom(id) {
+        return (byId(id)?.value || "").split(/\r?\n/).map(item => item.trim()).filter(Boolean);
+      }
+
+      function openArticle(id) {
+        const article = state.articles.find(item => item.id === id);
+        if (!article) return;
+        selectedArticleId = id;
+        drawerDirty = false;
+        byId("drawer-title").textContent = article.title || "未命名文章";
+        byId("drawer-content").innerHTML = `
+          <div class="drawer-grid">
+            <label class="field"><span class="label">發布日期</span><input id="edit-date" type="date" value="${escapeHtml(article.date)}"></label>
+            <label class="field"><span class="label">時間</span><input id="edit-time" type="time" value="${escapeHtml(article.time || "")}"></label>
+            <label class="field"><span class="label">平台</span><input id="edit-platform" value="${escapeHtml(article.platform)}"></label>
+            <label class="field"><span class="label">狀態</span><select id="edit-status">${articleOptions(STATUSES, article.status, item => item, item => item)}</select></label>
+            <label class="field"><span class="label">內容柱</span><select id="edit-pillar">${articleOptions(state.pillars, article.pillarId)}</select></label>
+            <label class="field"><span class="label">目標受眾</span><select id="edit-audience">${articleOptions(state.audiences, article.audienceId)}</select></label>
+          </div>
+          <div class="drawer-section"><label class="field"><span class="label">文章名稱</span><input id="edit-title" value="${escapeHtml(article.title)}"></label></div>
+          <div class="drawer-section"><label class="field"><span class="label">文章目的</span><textarea id="edit-purpose">${escapeHtml(article.purpose)}</textarea></label></div>
+          <div class="drawer-section"><label class="field"><span class="label">切角</span><textarea id="edit-angle">${escapeHtml(article.angle)}</textarea></label></div>
+          <div class="drawer-section"><label class="field"><span class="label">需要本人補充</span><textarea id="edit-personal">${escapeHtml(article.personalPrompt)}</textarea></label></div>
+          <div class="drawer-section">
+            <h3>寫作依據卡</h3>
+            <div class="drawer-grid">
+              <label class="field"><span class="label">素材狀態</span><select id="edit-evidence-status">${articleOptions(["未檢查","待補資料","足夠","已確認可寫"], article.evidenceGate?.status, item => item, item => item)}</select></label>
+              <label class="field"><span class="label">檢查時間</span><input id="edit-evidence-checked" value="${escapeHtml(article.evidenceGate?.checkedAt || "")}" placeholder="由 AI 檢查後填入"></label>
+            </div>
+            <label class="field"><span class="label">實際讀取來源（每行一筆，含時間戳或段落）</span><textarea id="edit-source-refs">${escapeHtml((article.evidenceGate?.sourceRefs || []).join("\n"))}</textarea></label>
+            <label class="field"><span class="label">可確認事實／本人觀點（每行一筆）</span><textarea id="edit-confirmed-facts">${escapeHtml((article.evidenceGate?.confirmedFacts || []).join("\n"))}</textarea></label>
+            <label class="field"><span class="label">仍缺資料（每行一筆）</span><textarea id="edit-missing-info">${escapeHtml((article.evidenceGate?.missingInfo || []).join("\n"))}</textarea></label>
+            <label class="field"><span class="label">推論界線（每行一筆）</span><textarea id="edit-inference-boundaries">${escapeHtml((article.evidenceGate?.inferenceBoundaries || []).join("\n"))}</textarea></label>
+            ${article.evidenceGate?.status === "待補資料" ? '<div class="notice">素材不足：請先補一個最關鍵資訊，這時不應產出完整正文。</div>' : ""}
+          </div>
+          <div class="drawer-section">
+            <h3>研究資料</h3>
+            ${(article.research || []).map(item => `<div class="card research-card" style="margin-bottom:8px"><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.summary)}</p><span class="subtle">${escapeHtml(item.whyUseful)}</span></div>`).join("") || '<div class="notice">這篇尚未完成研究，不能直接把外部資訊寫成事實。</div>'}
+          </div>
+          <div class="drawer-section">
+            <h3>篇幅與本篇套用設定</h3>
+            <div class="drawer-grid">
+              <label class="field"><span class="label">篇幅</span><select id="edit-length-mode">${articleOptions(["","短篇","中篇","長篇","自訂"], article.lengthPlan?.mode, item => item, item => item || "尚未選擇")}</select></label>
+              <label class="field"><span class="label">狀態</span><select id="edit-length-status">${articleOptions(["建議中","已確認"], article.lengthPlan?.status, item => item, item => item)}</select></label>
+              <label class="field"><span class="label">建議字數區間</span><input id="edit-length-range" value="${escapeHtml(article.lengthPlan?.recommendedRange || "")}" placeholder="例如 800～1,200 字"></label>
+              <label class="field"><span class="label">目標字數</span><input id="edit-target-chars" value="${escapeHtml(article.lengthPlan?.targetChars || "")}" placeholder="例如 1,000 字"></label>
+            </div>
+            <label class="field"><span class="label">推薦理由</span><textarea id="edit-length-reason">${escapeHtml(article.lengthPlan?.reason || "")}</textarea></label>
+            <label class="field"><span class="label">本篇語氣（每行一項）</span><textarea id="edit-style-tone">${escapeHtml((article.appliedStyle?.tone || []).join("\n"))}</textarea></label>
+            <label class="field"><span class="label">本篇排版（每行一項）</span><textarea id="edit-style-formatting">${escapeHtml((article.appliedStyle?.formatting || []).join("\n"))}</textarea></label>
+            <label class="field"><span class="label">設定來源</span><input id="edit-style-source" value="${escapeHtml(article.appliedStyle?.source || state.mindset?.skillName || "")}"></label>
+          </div>
+          <div class="drawer-section"><label class="field"><span class="label">目前底稿 v${escapeHtml(article.draft?.version || 0)}</span><textarea id="edit-draft" style="min-height:280px">${escapeHtml(article.draft?.body || "")}</textarea></label></div>
+          <div class="drawer-section">
+            <h3>想怎麼改</h3>
+            <div class="modify-menu">${CHANGE_TYPES.map(type => `<button class="btn small change-type ${article.changeRequest?.type === type ? "primary" : ""}" data-change-type="${escapeHtml(type)}" type="button">${escapeHtml(type)}</button>`).join("")}</div>
+            <label class="field" style="margin-top:10px"><span class="label">補充修改要求</span><textarea id="edit-change-note">${escapeHtml(article.changeRequest?.note || "")}</textarea></label>
+            <button class="btn" id="export-change-request" type="button">匯出單篇修改需求</button>
+          </div>
+          <div class="drawer-section grid two">
+            <article class="card"><span class="label">發布</span><strong>${escapeHtml(article.publishing?.action || "未設定")}</strong><p>${escapeHtml(article.publishing?.capability || "未檢查")}</p></article>
+            <article class="card"><span class="label">歸檔建議</span><strong>${escapeHtml(article.archive?.destination || "未設定")}</strong><p>${escapeHtml(article.archive?.reason || "尚未提供理由")}</p></article>
+          </div>
+          <div class="drawer-section">
+            <h3>修改紀錄</h3>
+            <ul class="list history">${(article.revisionHistory || []).map(item => `<li>v${escapeHtml(item.version)}｜${escapeHtml(item.date)}｜${escapeHtml(item.summary)}</li>`).join("") || "<li>尚無版本紀錄</li>"}</ul>
+          </div>
+          <div class="actions" style="justify-content:flex-start;margin-top:20px">
+            <button class="btn primary" id="save-article" type="button">儲存正式版本</button>
+            <button class="btn danger" id="delete-article" type="button">刪除文章</button>
+          </div>`;
+        byId("article-drawer").classList.add("open");
+        byId("article-drawer").setAttribute("aria-hidden", "false");
+        document.querySelector(".drawer").scrollTop = 0;
+        byId("close-drawer").focus();
+        document.querySelectorAll(".change-type").forEach(button => button.addEventListener("click", () => {
+          document.querySelectorAll(".change-type").forEach(item => item.classList.remove("primary"));
+          button.classList.add("primary");
+          scheduleDrawerAutosave();
+        }));
+        byId("drawer-content").oninput = scheduleDrawerAutosave;
+        byId("drawer-content").onchange = scheduleDrawerAutosave;
+        byId("save-article").addEventListener("click", saveArticleFromDrawer);
+        byId("delete-article").addEventListener("click", deleteSelectedArticle);
+        byId("export-change-request").addEventListener("click", exportChangeRequest);
+      }
+
+      function closeDrawer() {
+        if (selectedArticleId && drawerDirty) snapshotArticleFromDrawer(false);
+        clearTimeout(autosaveTimer);
+        byId("article-drawer").classList.remove("open");
+        byId("article-drawer").setAttribute("aria-hidden", "true");
+        selectedArticleId = null;
+      }
+
+      function scheduleDrawerAutosave() {
+        drawerDirty = true;
+        clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(() => snapshotArticleFromDrawer(false), 450);
+      }
+
+      function snapshotArticleFromDrawer(createVersion) {
+        const article = state.articles.find(item => item.id === selectedArticleId);
+        if (!article) return;
+        const nextBody = byId("edit-draft").value;
+        const nextVersion = createVersion ? Number(article.draft?.version || 0) + 1 : Number(article.draft?.version || 0);
+        Object.assign(article, {
+          date: byId("edit-date").value,
+          time: byId("edit-time").value,
+          platform: byId("edit-platform").value.trim(),
+          status: byId("edit-status").value,
+          pillarId: byId("edit-pillar").value,
+          audienceId: byId("edit-audience").value,
+          title: byId("edit-title").value.trim(),
+          purpose: byId("edit-purpose").value.trim(),
+          angle: byId("edit-angle").value.trim(),
+          personalPrompt: byId("edit-personal").value.trim()
+        });
+        article.evidenceGate = {
+          status: byId("edit-evidence-status").value,
+          sourceRefs: linesFrom("edit-source-refs"),
+          confirmedFacts: linesFrom("edit-confirmed-facts"),
+          missingInfo: linesFrom("edit-missing-info"),
+          inferenceBoundaries: linesFrom("edit-inference-boundaries"),
+          checkedAt: byId("edit-evidence-checked").value.trim()
+        };
+        if (article.evidenceGate.status === "待補資料") article.status = "待補本人觀點";
+        article.lengthPlan = {
+          mode: byId("edit-length-mode").value,
+          recommendedRange: byId("edit-length-range").value.trim(),
+          targetChars: byId("edit-target-chars").value.trim(),
+          reason: byId("edit-length-reason").value.trim(),
+          status: byId("edit-length-status").value
+        };
+        article.appliedStyle = {
+          tone: linesFrom("edit-style-tone"),
+          formatting: linesFrom("edit-style-formatting"),
+          source: byId("edit-style-source").value.trim()
+        };
+        article.draft = {version: nextVersion, body: nextBody, updatedAt: nowIso()};
+        const selectedType = document.querySelector(".change-type.primary")?.dataset.changeType || "";
+        article.changeRequest = {type: selectedType, note: byId("edit-change-note").value.trim()};
+        if (createVersion) {
+          article.revisionHistory = article.revisionHistory || [];
+          article.revisionHistory.push({version: nextVersion, date: nowIso(), summary: "從 HTML 工作台儲存正式版本"});
+        }
+        saveState(createVersion ? "正式版本已儲存；請備份 JSON" : "");
+        drawerDirty = false;
+      }
+
+      function saveArticleFromDrawer() {
+        const article = state.articles.find(item => item.id === selectedArticleId);
+        if (!article) return;
+        snapshotArticleFromDrawer(true);
+        renderAll();
+        openArticle(article.id);
+      }
+
+      function deleteSelectedArticle() {
+        const article = state.articles.find(item => item.id === selectedArticleId);
+        if (!article || !confirm(`確定刪除「${article.title}」？這個動作需重新匯出 JSON 才會成為正式版本。`)) return;
+        state.articles = state.articles.filter(item => item.id !== selectedArticleId);
+        saveState("文章已刪除");
+        closeDrawer();
+        renderAll();
+      }
+
+      function exportChangeRequest() {
+        const article = state.articles.find(item => item.id === selectedArticleId);
+        if (!article) return;
+        const selectedType = document.querySelector(".change-type.primary")?.dataset.changeType || "尚未選擇";
+        const note = byId("edit-change-note").value.trim() || "無補充";
+        const text = `# 單篇修改需求\n\n文章 ID：${article.id}\n文章：${article.title}\n目前版本：v${article.draft?.version || 0}\n修改類型：${selectedType}\n補充要求：${note}\n\n## 目前底稿\n\n${byId("edit-draft").value}`;
+        download(`${safeFileName(article.title)}_修改需求.md`, text, "text/markdown;charset=utf-8");
+      }
+
+      function addArticle() {
+        const next = state.articles.length + 1;
+        const firstPillar = state.pillars.find(item => item.status === "confirmed") || state.pillars[0];
+        const firstAudience = state.audiences.find(item => item.role === "primary") || state.audiences[0];
+        const article = {
+          id: `article-${Date.now()}`,
+          order: next,
+          date: `${state.workspace.month}-01`, time: "12:00", platform: state.workspace.platforms[0] || "未設定",
+          pillarId: firstPillar?.id || "", title: "新文章", purpose: "", audienceId: firstAudience?.id || "", angle: "", personalPrompt: "",
+          status: "待研究", research: [], lengthPlan: defaultLengthPlan(), evidenceGate: defaultEvidenceGate(), appliedStyle: defaultAppliedStyle(),
+          draft: {version: 0, body: "", updatedAt: ""}, revisionHistory: [], changeRequest: {type: "", note: ""},
+          publishing: {account:"", audience:"平台預設受眾", media:"待確認", action:"排程", capability:"需要先檢查", readbackUrl:""},
+          archive: {provider: state.archive?.provider || "未設定", destination:"資料蒐集庫", reason:"尚未完成研究", status:"待確認", url:""}
+        };
+        state.articles.push(article);
+        saveState("已新增文章");
+        renderAll();
+        openArticle(article.id);
+      }
+
+      function addPillar() {
+        state.pillars.push({
+          id: `pillar-${Date.now()}`, name: "新內容柱", sourceType: "suggested", sourceNote: "AI 建議，尚待確認",
+          audienceIds: [], readerProblem: "", purpose: "", formats: [], ratio: 0, avoid: "", status: "suggested"
+        });
+        saveState("已新增內容柱");
+        renderAll();
+      }
+
+      function handlePillarChange(event) {
+        const card = event.target.closest("[data-pillar-id]");
+        if (!card || !event.target.dataset.field) return;
+        const pillar = state.pillars.find(item => item.id === card.dataset.pillarId);
+        if (!pillar) return;
+        const field = event.target.dataset.field;
+        let value = event.target.value;
+        if (field === "ratio") value = Number(value || 0);
+        if (field === "formats") value = value.split(/[、,，]/).map(item => item.trim()).filter(Boolean);
+        pillar[field] = value;
+        saveState("");
+        renderAll();
+      }
+
+      function handlePillarClick(event) {
+        if (event.target.dataset.action !== "delete-pillar") return;
+        const card = event.target.closest("[data-pillar-id]");
+        const pillar = state.pillars.find(item => item.id === card?.dataset.pillarId);
+        if (!pillar || !confirm(`確定刪除內容柱「${pillar.name}」？既有文章不會自動改分類。`)) return;
+        state.pillars = state.pillars.filter(item => item.id !== pillar.id);
+        saveState("內容柱已刪除");
+        renderAll();
+      }
+
+      function validateImported(data) {
+        if (data?.schemaVersion !== 1) throw new Error("只支援 schemaVersion 1");
+        if (![2,4].includes(data?.workspace?.periodWeeks)) throw new Error("periodWeeks 必須是 2 或 4");
+        if (!/^\d{4}-\d{2}$/.test(data?.workspace?.month || "")) throw new Error("month 必須是 YYYY-MM");
+        ["audiences", "pillars", "articles"].forEach(key => { if (!Array.isArray(data[key])) throw new Error(`${key} 必須是陣列`); });
+        data.articles.forEach(article => { if (!STATUSES.includes(article.status)) throw new Error(`未知文章狀態：${article.status}`); });
+        return true;
+      }
+
+      function importJson(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const next = JSON.parse(reader.result);
+            validateImported(next);
+            state = normalizeData(next);
+            storageKey = storageKeyFor(state);
+            hasUnexportedChanges = false;
+            saveState("JSON 已匯入並驗證", false);
+            closeDrawer();
+            renderAll();
+            showToast(`已讀回：${state.workspace.learnerName}｜${state.workspace.month}｜${state.articles.length} 篇文章`);
+          } catch (error) {
+            alert(`匯入失敗：${error.message}`);
+          }
+        };
+        reader.readAsText(file, "utf-8");
+      }
+
+      function safeFileName(value) {
+        return String(value || "內容工作台").replace(/[\\/:*?"<>|]/g, "-").slice(0, 80);
+      }
+
+      function localFileTimestamp() {
+        const now = new Date();
+        const parts = [now.getFullYear(), String(now.getMonth() + 1).padStart(2,"0"), String(now.getDate()).padStart(2,"0")];
+        return `${parts.join("")}-${String(now.getHours()).padStart(2,"0")}${String(now.getMinutes()).padStart(2,"0")}${String(now.getSeconds()).padStart(2,"0")}`;
+      }
+
+      function download(filename, content, type) {
+        const blob = new Blob([content], {type});
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url; anchor.download = filename; document.body.appendChild(anchor); anchor.click(); anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 500);
+      }
+
+      function exportJson() {
+        clearTimeout(autosaveTimer);
+        if (selectedArticleId) snapshotArticleFromDrawer(false);
+        state.workspace.updatedAt = nowIso();
+        state.workspace.lastExportedAt = state.workspace.updatedAt;
+        hasUnexportedChanges = false;
+        saveState("", false);
+        download(`${safeFileName(state.workspace.learnerName)}_${state.workspace.month}_內容規劃_${localFileTimestamp()}.json`, JSON.stringify(state, null, 2), "application/json;charset=utf-8");
+        renderSaveStatus(`正式 JSON 已備份 ${new Date().toLocaleTimeString("zh-TW", {hour:"2-digit", minute:"2-digit"})}`);
+        showToast("JSON 已匯出；重新載入時請確認學員、月份與文章數");
+      }
+
+      function openNextArticle() {
+        const article = sortedArticles().find(item => !["已確認","待排程","已排程","已發布","封存"].includes(item.status));
+        if (!article) { showToast("目前沒有待處理文章"); return; }
+        switchTab("calendar");
+        openArticle(article.id);
+      }
+
+      function toMarkdown() {
+        const lines = [
+          `# ${state.workspace.learnerName}｜${state.workspace.month} 內容計畫`, "",
+          `- 期間：${state.workspace.periodWeeks} 週`,
+          `- 目標：${state.workspace.goal}`,
+          `- 平台：${state.workspace.platforms.join("、")}`,
+          `- 時區：${state.workspace.timezone}`, "", "## 內容柱", ""
+        ];
+        state.pillars.forEach(pillar => lines.push(`- ${pillar.name}｜${pillar.ratio}%｜${pillar.purpose}`));
+        lines.push("", "## 文章月曆", "");
+        sortedArticles().forEach(article => {
+          lines.push(`### ${article.date} ${article.time || ""}｜${article.title}`, "", `- 平台：${article.platform}`, `- 內容柱：${pillarName(article.pillarId)}`, `- 受眾：${audienceName(article.audienceId)}`, `- 狀態：${article.status}`, `- 切角：${article.angle}`, "", article.draft?.body || "尚無底稿", "");
+        });
+        return lines.join("\n");
+      }
+
+      function bindEvents() {
+        document.querySelectorAll(".tab").forEach(tab => tab.addEventListener("click", () => switchTab(tab.dataset.tab)));
+        byId("add-article").addEventListener("click", addArticle);
+        byId("add-pillar").addEventListener("click", addPillar);
+        byId("pillar-grid").addEventListener("change", handlePillarChange);
+        byId("pillar-grid").addEventListener("click", handlePillarClick);
+        byId("calendar-grid").addEventListener("click", event => {
+          const card = event.target.closest("[data-article-id]");
+          if (card) openArticle(card.dataset.articleId);
+        });
+        ["filter-pillar", "filter-platform", "filter-status"].forEach(id => byId(id).addEventListener("change", renderCalendar));
+        byId("clear-filters").addEventListener("click", () => {
+          ["filter-pillar", "filter-platform", "filter-status"].forEach(id => byId(id).value = ""); renderCalendar();
+        });
+        byId("close-drawer").addEventListener("click", closeDrawer);
+        byId("article-drawer").addEventListener("click", event => { if (event.target === byId("article-drawer")) closeDrawer(); });
+        document.addEventListener("keydown", event => { if (event.key === "Escape") closeDrawer(); });
+        byId("import-file").addEventListener("change", event => { if (event.target.files[0]) importJson(event.target.files[0]); event.target.value = ""; });
+        byId("export-json").addEventListener("click", exportJson);
+        byId("menu-export-json").addEventListener("click", exportJson);
+        byId("open-next-article").addEventListener("click", openNextArticle);
+        byId("export-markdown").addEventListener("click", () => download(`${safeFileName(state.workspace.learnerName)}_${state.workspace.month}_內容計畫.md`, toMarkdown(), "text/markdown;charset=utf-8"));
+        byId("reset-local").addEventListener("click", () => {
+          if (!confirm("確定清除這個工作台的瀏覽器暫存？已匯出的 JSON 不會被刪除。")) return;
+          localStorage.removeItem(storageKey); state = deepClone(initialData); hasUnexportedChanges = false; renderAll(); showToast("已恢復 HTML 內建版本");
+        });
+        window.addEventListener("beforeunload", event => {
+          if (!hasUnexportedChanges) return;
+          event.preventDefault();
+          event.returnValue = "";
+        });
+      }
+
+      window.ContentWorkbench = {
+        getState: () => deepClone(state),
+        validateImported,
+        toMarkdown,
+        isLockedDate,
+        openArticle,
+        renderAll
+      };
+
+      bindEvents();
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
