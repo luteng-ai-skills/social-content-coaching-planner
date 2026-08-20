@@ -1,47 +1,56 @@
-# 社群內容陪跑規劃器
+# 社群內容陪跑規劃師
 
-這是一套給內容新手使用的 Codex Skill，會用繁體中文逐步確認本人思維、推導受眾與內容柱，建立兩週或四週社群月曆，並陪伴逐篇研究、寫作、修改與歸檔。
+這是一套給內容新手使用的繁體中文 Skill。它會先確認本人思維、受眾與內容柱，再建立兩週或四週內容月曆，陪使用者逐篇完成研究、證據檢查、寫作、修改、歸檔與排程前確認。
 
-目前版本：0.1.1
+目前版本：**v0.2.0**
 
-## 主要功能
+## v0.2.0 重點
 
-- 一次只問一個關鍵問題，逐步建立內容策略。
-- 規劃兩週或四週 Facebook 內容月曆。
-- 以觀察型文章、本人觀點與素材證據完成貼文。
-- Facebook 草稿預設控制在 600～900 字。
-- 產生可離線使用的 HTML 內容工作台。
-- HTML 支援瀏覽器暫存、明確儲存狀態與正式 JSON 匯出。
+- 一次只問一題；工作頁保留可見的「陪跑選單」與「開啟下一篇」。
+- 人物思維、來源索引、案例資料卡與單篇寫作依據分層，不把摘要當成完整案例庫。
+- 每篇動筆前先檢查實際來源、已知事實、缺口與不可越界推論；素材不足時停止成稿。
+- 依平台、主題與素材量，建議短篇、中篇、長篇或自訂字數，不再固定套用同一範圍。
+- 依本人已確認的語氣、句長、段落、換行、開頭、收尾與 CTA 寫作。
+- HTML 工作台支援自動暫存、未備份提示、附時間 JSON 匯出及舊版 `schemaVersion: 1` 資料。
+- 不保存密碼、Token、Cookie 或 OAuth 憑證；不會自行發布或建立週期性排程。
 
-## 下載安裝
+## 下載
 
-1. 使用 GitHub 帳號接受 repository 的唯讀邀請。
-2. 進入右側 Releases，下載 social-content-coaching-planner-v0.1.1.zip。
-3. 解壓縮下載檔。
-4. 確認資料夾名稱為 social-content-coaching-planner。
-5. 把整個資料夾放進 Codex 的 Skills 目錄：
-   - macOS：~/.codex/skills/social-content-coaching-planner
-   - Windows：%USERPROFILE%\.codex\skills\social-content-coaching-planner
-6. 重新啟動 Codex 或開啟新的 Codex task。
-7. 輸入「使用 social-content-coaching-planner 開始」。
+請從 [GitHub Releases](https://github.com/luteng-ai-skills/social-content-coaching-planner/releases) 下載最新正式 ZIP：
 
-安裝完成後，資料夾第一層應直接看見 SKILL.md、agents、assets、references 與 scripts。
+`social-content-coaching-planner-v0.2.0.zip`
 
-## 使用需求
+SHA-256：`6c5ff89262ff66080d9e7ba79f26cf3d74305f9a0930e0a8c458b6cec0f27d67`
 
-- Codex 桌面版或支援 SKILL.md 的相容環境。
-- 如需建立或驗證 HTML 工作台，電腦需有 Python 3。
-- Skill 本身不包含密碼、Token、Cookie 或 OAuth 憑證。
+## 安裝到 Codex
 
-## 權限與分享邊界
+1. 下載 ZIP 並解壓縮。
+2. 確認解壓後的 `social-content-coaching-planner` 第一層直接包含 `SKILL.md`、`agents`、`assets`、`references` 與 `scripts`。
+3. 新版 Codex 環境優先放到 `~/.agents/skills/social-content-coaching-planner`；若你的既有環境已明確使用 `~/.codex/skills`，沿用有效位置即可，不要同時安裝兩份。
+4. 建立新任務後明確呼叫 `$social-content-coaching-planner`。
 
-這是私人發佈 repository。獲邀朋友預計只取得 GitHub 的 Read 權限：
+## 安裝到 Claude Cowork
 
-- 可以查看、下載及安裝。
-- 不能把修改推送回這個 repository。
-- 下載後的本機檔案在技術上仍可自行修改，但不會影響原始 repository。
-- 未經 repository 擁有者同意，請勿公開轉傳、重新上傳或販售。
+1. 保留正式 ZIP，不要先解壓縮。
+2. 到 **Customize → Skills → Add／Upload a skill** 上傳 ZIP。
+3. 啟用新版並關閉舊版，建立新任務測試。
+4. 新工作頁應看得到陪跑選單、案例與來源、目前階段及下一篇入口。
 
-## 版本更新
+## 建議測試語
 
-有新版本時，重新下載最新 Release ZIP，以新版資料夾替換舊版即可。若有自己的內容資料，請先備份後再替換。
+> 請使用「社群內容陪跑規劃師」，一次只問我一題。先確認我有沒有現成的本人思維或人設資料，不要直接替我寫貼文。
+
+## 正式資料與更新
+
+JSON 是跨任務與跨工具的正式主版本；HTML 與瀏覽器暫存是操作介面，不取代正式備份。更新 Skill 前先保留自己的 JSON，不要用新版範例覆蓋個人資料。安裝新版後，以原 JSON 重建工作台並重新讀回確認。
+
+## 開發與驗證
+
+需要 Python 3。可在 Skill 根目錄執行：
+
+```bash
+python3 scripts/測試內容工作台.py
+python3 scripts/驗證內容工作台.py --json assets/範例內容規劃.json --html assets/一個月內容工作台模板.html
+```
+
+本儲存庫是公開的通用版本，不包含學員逐字稿、人物資料、客戶案例、內部 Notion 連結或平台憑證。
