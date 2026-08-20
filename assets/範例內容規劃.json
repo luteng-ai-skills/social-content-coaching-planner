@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "workspace": {
+    "id": "demo-2026-08",
+    "learnerName": "陪跑學員",
+    "month": "2026-08",
+    "periodWeeks": 2,
+    "goal": "建立專業信任，讓適合的讀者理解我能提供的幫助",
+    "platforms": ["Facebook", "Instagram"],
+    "postsPerWeek": 2,
+    "timezone": "Asia/Taipei",
+    "updatedAt": "2026-08-20T10:00:00+08:00"
+  },
+  "mindset": {
+    "status": "active",
+    "skillName": "示範學員思維",
+    "source": "skill",
+    "confirmedSummary": [
+      "重視可以真正執行的方法",
+      "希望用生活案例解釋專業"
+    ],
+    "inferredSummary": [
+      "可多寫從混亂整理成步驟的內容"
+    ],
+    "avoid": [
+      "不使用沒有來源的誇張數字",
+      "不捏造個人經驗"
+    ],
+    "writingPreferences": {
+      "tone": ["清楚", "務實", "像陪讀者一起拆解"],
+      "sentenceRhythm": "短句與中句交錯",
+      "paragraphStyle": "每段一個重點，避免大段文字",
+      "lineBreakStyle": "轉折與重點前後留白",
+      "punctuation": "少用驚嘆號",
+      "openingStyle": "從具體情境切入",
+      "closingStyle": "收回可執行的一步",
+      "ctaStyle": "自然邀請讀者回想自身經驗",
+      "forbiddenPatterns": ["保證成效", "未經證實的成功案例"],
+      "status": "已確認"
+    }
+  },
+  "audiences": [
+    {
+      "id": "aud-primary",
+      "role": "primary",
+      "name": "想開始經營內容但沒有方向的自由工作者",
+      "currentState": "知道要被看見，但每次打開社群都不知道寫什麼",
+      "pain": "缺少可持續的內容分類與寫作順序",
+      "desiredOutcome": "能固定產出並讓讀者理解自己的價值",
+      "followReason": "可以取得簡單、可執行的內容方法",
+      "suitableContent": "流程拆解、實作案例、常見錯誤",
+      "avoidLanguage": "不要用行銷黑話或保證流量",
+      "status": "confirmed"
+    },
+    {
+      "id": "aud-secondary",
+      "role": "secondary",
+      "name": "已經發文但內容散亂的個人品牌經營者",
+      "currentState": "有素材但缺少一致主軸",
+      "pain": "讀者看不懂帳號長期在談什麼",
+      "desiredOutcome": "建立清楚內容柱與系列",
+      "followReason": "看見可直接套用的整理示範",
+      "suitableContent": "內容健檢、前後對照、系列規劃",
+      "avoidLanguage": "不要只談抽象定位",
+      "status": "confirmed"
+    },
+    {
+      "id": "aud-not-priority",
+      "role": "notPriority",
+      "name": "已有完整行銷團隊的大型品牌",
+      "currentState": "已有專人與成熟流程",
+      "pain": "需要的是跨部門治理而非新手方法",
+      "desiredOutcome": "大規模內容營運",
+      "followReason": "本月內容不以此族群為主",
+      "suitableContent": "不優先",
+      "avoidLanguage": "不宣稱新手方法可直接解決企業流程",
+      "status": "confirmed"
+    }
+  ],
+  "pillars": [
+    {
+      "id": "pillar-process",
+      "name": "內容流程整理",
+      "sourceType": "confirmed",
+      "sourceNote": "本人思維反覆提到可執行步驟",
+      "audienceIds": ["aud-primary", "aud-secondary"],
+      "readerProblem": "有素材但不知道怎麼排成可持續流程",
+      "purpose": "建立方法與專業信任",
+      "formats": ["步驟教學", "清單", "流程示範"],
+      "ratio": 60,
+      "avoid": "避免把流程說成唯一標準",
+      "status": "confirmed"
+    },
+    {
+      "id": "pillar-practice",
+      "name": "真實實作觀察",
+      "sourceType": "inferred",
+      "sourceNote": "從生活案例表達習慣歸納",
+      "audienceIds": ["aud-primary"],
+      "readerProblem": "看過方法但不知道實際怎麼使用",
+      "purpose": "用真實情境降低理解門檻",
+      "formats": ["案例", "復盤", "生活觀察"],
+      "ratio": 40,
+      "avoid": "未確認的個人故事不得寫成事實",
+      "status": "confirmed"
+    }
+  ],
+  "sourceLibrary": {
+    "sources": [
+      {
+        "id": "source-demo-interview",
+        "title": "示範學員訪談摘要",
+        "sourceType": "訪談",
+        "pathOrUrl": "示範資料／訪談摘要.md",
+        "recordedAt": "2026-08-01",
+        "owner": "陪跑學員",
+        "usageBoundary": "僅示範欄位，不得當成真實學員案例",
+        "status": "需確認"
+      }
+    ],
+    "caseCards": [
+      {
+        "id": "case-demo-blank-page",
+        "title": "面對空白貼文時重新整理內容入口",
+        "summary": "示範如何把一段訪談拆成可追溯案例卡。",
+        "sourceId": "source-demo-interview",
+        "locator": "第 3 段",
+        "peopleOrOrganizations": [],
+        "situation": "準備發文時不知道從何開始",
+        "action": "先分類受眾、題目與平台",
+        "result": "示範資料，尚未由本人確認",
+        "reflection": "可執行的入口比一次想出完整文章重要",
+        "confirmedQuotes": [],
+        "usableFor": ["內容流程整理", "新手寫作卡點"],
+        "missingDetails": ["本人真實情境與結果"],
+        "sensitivity": "需本人確認",
+        "status": "草稿"
+      }
+    ]
+  },
+  "articles": [
+    {
+      "id": "article-001",
+      "order": 1,
+      "date": "2026-08-03",
+      "time": "20:00",
+      "platform": "Facebook",
+      "pillarId": "pillar-process",
+      "title": "為什麼你不是沒素材，只是沒有內容入口",
+      "purpose": "讓讀者辨識自己卡住的位置",
+      "audienceId": "aud-primary",
+      "angle": "從打開空白貼文的情境，拆解素材與題目的差別",
+      "personalPrompt": "補一個自己曾經卡在空白頁的真實情境",
+      "status": "草稿待確認",
+      "lengthPlan": {
+        "mode": "中篇",
+        "recommendedRange": "800～1,200 字",
+        "targetChars": "1,000 字",
+        "reason": "需要交代空白頁情境、原因與一個可執行方法",
+        "status": "已確認"
+      },
+      "evidenceGate": {
+        "status": "已確認可寫",
+        "sourceRefs": ["本人訪談摘要｜內容卡住的經驗｜第 3 段"],
+        "confirmedFacts": ["本人重視可執行的方法"],
+        "missingInfo": ["仍可補一個本人卡在空白頁的具體情境"],
+        "inferenceBoundaries": ["不能把示範情境寫成本人真實經歷"],
+        "checkedAt": "2026-08-02T18:00:00+08:00"
+      },
+      "appliedStyle": {
+        "tone": ["清楚", "務實"],
+        "formatting": ["每段一個重點", "轉折前後留白"],
+        "source": "示範學員思維"
+      },
+      "research": [
+        {
+          "title": "創作者規劃內容時常見的認知負荷",
+          "eventDate": "2026-07-15",
+          "checkedAt": "2026-08-01",
+          "summary": "示範研究資料，正式使用時需由 AI 搜尋並換成真實來源。",
+          "whyUseful": "可支持先建立分類入口再開始寫作的切角。",
+          "audienceBenefit": "讓讀者知道卡住不一定是沒有能力。",
+          "freshUntil": "2026-09-01",
+          "risk": "目前僅為範例，不得當成正式引用。",
+          "recommendedAngle": "先降低開始成本，再談寫作技巧。",
+          "decision": "採用",
+          "sources": []
+        }
+      ],
+      "draft": {
+        "version": 1,
+        "body": "你可能不是沒有內容。\n\n只是每次準備發文時，都要重新決定要寫給誰、要談什麼、要放在哪裡。\n\n這篇是工作台示範底稿，請在正式使用時換成學員本人確認過的內容。",
+        "updatedAt": "2026-08-02T18:30:00+08:00"
+      },
+      "revisionHistory": [
+        {
+          "version": 1,
+          "date": "2026-08-02T18:30:00+08:00",
+          "summary": "建立第一版示範底稿"
+        }
+      ],
+      "changeRequest": {
+        "type": "",
+        "note": ""
+      },
+      "publishing": {
+        "account": "",
+        "audience": "平台預設受眾",
+        "media": "無",
+        "action": "排程",
+        "capability": "需要先檢查",
+        "readbackUrl": ""
+      },
+      "archive": {
+        "provider": "Notion",
+        "destination": "寫作草稿",
+        "reason": "正文仍需補本人案例",
+        "status": "待確認",
+        "url": ""
+      }
+    },
+    {
+      "id": "article-002",
+      "order": 2,
+      "date": "2026-08-07",
+      "time": "12:30",
+      "platform": "Instagram",
+      "pillarId": "pillar-practice",
+      "title": "我怎麼把一則工作紀錄變成三個內容題目",
+      "purpose": "示範素材轉題目的過程",
+      "audienceId": "aud-primary",
+      "angle": "以前後對照呈現拆解過程",
+      "personalPrompt": "提供一則可以公開的真實工作紀錄",
+      "status": "待補本人觀點",
+      "lengthPlan": {
+        "mode": "",
+        "recommendedRange": "",
+        "targetChars": "",
+        "reason": "",
+        "status": "建議中"
+      },
+      "evidenceGate": {
+        "status": "待補資料",
+        "sourceRefs": [],
+        "confirmedFacts": [],
+        "missingInfo": ["一則可以公開的真實工作紀錄"],
+        "inferenceBoundaries": ["不得自行虛構素材轉換案例"],
+        "checkedAt": ""
+      },
+      "appliedStyle": {
+        "tone": [],
+        "formatting": [],
+        "source": "示範學員思維"
+      },
+      "research": [],
+      "draft": {
+        "version": 0,
+        "body": "",
+        "updatedAt": ""
+      },
+      "revisionHistory": [],
+      "changeRequest": {
+        "type": "",
+        "note": ""
+      },
+      "publishing": {
+        "account": "",
+        "audience": "平台預設受眾",
+        "media": "待確認",
+        "action": "排程",
+        "capability": "只能輸出可貼文案",
+        "readbackUrl": ""
+      },
+      "archive": {
+        "provider": "未設定",
+        "destination": "資料蒐集庫",
+        "reason": "尚未完成研究",
+        "status": "待確認",
+        "url": ""
+      }
+    }
+  ],
+  "archive": {
+    "provider": "Notion",
+    "defaultDestinationUrl": "",
+    "destinationType": "unknown",
+    "schemaMap": {},
+    "checkedAt": ""
+  },
+  "publishingBatch": {
+    "scope": "兩週",
+    "status": "未準備",
+    "confirmationPhrase": "確認兩週排程",
+    "authorizedAt": "",
+    "articles": []
+  }
+}
